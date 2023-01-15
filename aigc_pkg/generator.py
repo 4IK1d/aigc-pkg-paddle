@@ -18,7 +18,7 @@ from paddlenlp.metrics import BLEU
 from visualdl import LogWriter
 from rouge import Rouge
 
-import prepare
+from aigc_pkg import prepare
 
 class AbstractGeneratorConfig:
     def __init__(self, warmup, learning_rate,num_epochs,adam_epsilon,weight_decay,log_steps,eval_steps, 
@@ -87,7 +87,7 @@ class BaseGenerator(abc.ABC):
         return optimizer, lr_scheduler, log_writer, decay_params, num_training_steps
     
     # 计算训练评估参数Rouge-1，Rouge-2，Rouge-L，BLEU-4
-    def _compute_metrics(preds, targets):
+    def _compute_metrics(self, preds, targets):
         assert len(preds) == len(targets), (
             'The length of pred_responses should be equal to the length of '
             'target_responses. But received {} and {}.'.format(
@@ -180,9 +180,9 @@ class AbstractGenerator(BaseGenerator):
 
         
     @paddle.no_grad()
-    def evaluate(self, data_loader):
+    def evaluate(self, data_loader=None):
         # use default dev data loader if not specified.
-        data_loader = self.dev_data_loader
+        data_loader = self.dev_data_loader if not data_loader else data_loader
 
         self.model_set.model.eval()
         all_preds = []
